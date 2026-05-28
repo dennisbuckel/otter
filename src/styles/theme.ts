@@ -37,15 +37,15 @@ export interface Theme {
 
 export const lightTheme: Theme = {
   colors: {
-    primary: '#1E88E5', // Blue
-    secondary: '#00ACC1', // Cyan
-    background: '#F5F5F5',
-    text: '#212121',
-    accent: '#FF9800', // Orange
-    error: '#F44336', // Red
-    success: '#4CAF50', // Green
+    primary: '#3F51B5', // Indigo - more sophisticated blue
+    secondary: '#5C6BC0', // Lighter indigo
+    background: '#F8F9FA', // Slightly warmer white
+    text: '#2C3E50', // Dark blue-gray - easier on the eyes
+    accent: '#FF9800', // Orange - kept for recognition
+    error: '#E74C3C', // Softer red
+    success: '#2ECC71', // Softer green
     card: '#FFFFFF',
-    border: '#E0E0E0',
+    border: '#E9ECEF', // Slightly darker for better contrast
   },
   fonts: {
     main: "'Roboto', 'Segoe UI', sans-serif",
@@ -64,23 +64,23 @@ export const lightTheme: Theme = {
     xl: '32px',
   },
   shadows: {
-    small: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    medium: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    small: '0 2px 4px rgba(0, 0, 0, 0.05)',
+    medium: '0 4px 8px rgba(0, 0, 0, 0.08)',
     large: '0 8px 16px rgba(0, 0, 0, 0.1)',
   },
 };
 
 export const darkTheme: Theme = {
   colors: {
-    primary: '#2196F3', // Blue
-    secondary: '#00BCD4', // Cyan
-    background: '#121212',
-    text: '#FFFFFF',
-    accent: '#FFA726', // Orange
-    error: '#EF5350', // Red
-    success: '#66BB6A', // Green
-    card: '#1E1E1E',
-    border: '#333333',
+    primary: '#6366F1', // Indigo - more vibrant
+    secondary: '#818CF8', // Lighter indigo
+    background: '#1A202C', // Dark blue-gray - less harsh than pure black
+    text: '#F8F9FA', // Off-white - easier on the eyes
+    accent: '#F59E0B', // Amber - warmer orange
+    error: '#EF4444', // Vibrant red
+    success: '#10B981', // Teal green - less harsh
+    card: '#2D3748', // Dark blue-gray - softer contrast
+    border: '#4A5568', // Medium gray - better definition
   },
   fonts: {
     main: "'Roboto', 'Segoe UI', sans-serif",
@@ -100,22 +100,22 @@ export const darkTheme: Theme = {
   },
   shadows: {
     small: '0 2px 4px rgba(0, 0, 0, 0.3)',
-    medium: '0 4px 8px rgba(0, 0, 0, 0.3)',
-    large: '0 8px 16px rgba(0, 0, 0, 0.3)',
+    medium: '0 4px 8px rgba(0, 0, 0, 0.4)',
+    large: '0 8px 16px rgba(0, 0, 0, 0.5)',
   },
 };
 
 export const funTheme: Theme = {
   colors: {
-    primary: '#FF5722', // Deep Orange
-    secondary: '#00BCD4', // Cyan
-    background: '#2E7D32', // Green
-    text: '#FFFFFF',
-    accent: '#FFC107', // Amber
-    error: '#FF5252', // Red
-    success: '#69F0AE', // Green
-    card: '#388E3C', // Lighter Green
-    border: '#43A047', // Even Lighter Green
+    primary: '#F59E0B', // Amber primary
+    secondary: '#FBBF24', // Light amber
+    background: '#B45309', // Deep amber background
+    text: '#FFFFFF', // White text
+    accent: '#3B82F6', // Blue accent (complementary to amber)
+    error: '#EF4444', // Red
+    success: '#34D399', // Emerald green
+    card: '#D97706', // Medium amber for cards
+    border: '#F59E0B', // Light amber for borders
   },
   fonts: {
     main: "'Roboto', 'Segoe UI', sans-serif",
@@ -140,12 +140,48 @@ export const funTheme: Theme = {
   },
 };
 
-export type ThemeType = 'light' | 'dark' | 'fun';
+export const oceanTheme: Theme = {
+  colors: {
+    primary: '#0EA5E9', // Sky blue
+    secondary: '#38BDF8', // Lighter sky blue
+    background: '#0C4A6E', // Dark blue
+    text: '#F0F9FF', // Very light blue
+    accent: '#FB923C', // Orange - complementary to blue
+    error: '#EF4444', // Red
+    success: '#10B981', // Emerald green
+    card: '#075985', // Medium blue for cards
+    border: '#0284C7', // Bright blue for borders
+  },
+  fonts: {
+    main: "'Roboto', 'Segoe UI', sans-serif",
+    heading: "'Poppins', 'Segoe UI', sans-serif",
+  },
+  borderRadius: {
+    small: '8px',
+    medium: '12px',
+    large: '20px',
+  },
+  spacing: {
+    xs: '4px',
+    sm: '8px',
+    md: '16px',
+    lg: '24px',
+    xl: '32px',
+  },
+  shadows: {
+    small: '0 2px 4px rgba(0, 0, 0, 0.3)',
+    medium: '0 4px 8px rgba(0, 0, 0, 0.3)',
+    large: '0 8px 16px rgba(0, 0, 0, 0.3)',
+  },
+};
+
+export type ThemeType = 'light' | 'dark' | 'fun' | 'ocean';
 
 export const themes: Record<ThemeType, Theme> = {
   light: lightTheme,
   dark: darkTheme,
   fun: funTheme,
+  ocean: oceanTheme,
 };
 
 export default themes;

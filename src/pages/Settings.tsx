@@ -112,7 +112,7 @@ const Settings: React.FC = () => {
             <ThemeOptions>
               <ThemeOption 
                 isActive={themeType === 'light'} 
-                themeColor="#1E88E5"
+                themeColor="#3F51B5"
                 onClick={() => setTheme('light')}
               >
                 <ThemeName>Light</ThemeName>
@@ -120,7 +120,7 @@ const Settings: React.FC = () => {
               
               <ThemeOption 
                 isActive={themeType === 'dark'} 
-                themeColor="#121212"
+                themeColor="#1A202C"
                 onClick={() => setTheme('dark')}
               >
                 <ThemeName>Dark</ThemeName>
@@ -128,10 +128,18 @@ const Settings: React.FC = () => {
               
               <ThemeOption 
                 isActive={themeType === 'fun'} 
-                themeColor="#673AB7"
+                themeColor="#F59E0B"
                 onClick={() => setTheme('fun')}
               >
-                <ThemeName>Fun</ThemeName>
+                <ThemeName>Amber</ThemeName>
+              </ThemeOption>
+              
+              <ThemeOption 
+                isActive={themeType === 'ocean'} 
+                themeColor="#0EA5E9"
+                onClick={() => setTheme('ocean')}
+              >
+                <ThemeName>Ocean</ThemeName>
               </ThemeOption>
             </ThemeOptions>
           </SettingItem>

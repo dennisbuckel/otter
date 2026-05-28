@@ -38,7 +38,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   // Function to toggle between themes
   const toggleTheme = () => {
-    const themeOrder: ThemeType[] = ['light', 'dark', 'fun'];
+    const themeOrder: ThemeType[] = ['light', 'dark', 'fun', 'ocean'];
     const currentIndex = themeOrder.indexOf(themeType);
     const nextIndex = (currentIndex + 1) % themeOrder.length;
     setThemeType(themeOrder[nextIndex]);

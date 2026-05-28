@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import styled from 'styled-components';
 import Navigation from './Navigation';
 import { useTheme } from '../context/ThemeContext';
-import { FaSun, FaMoon, FaPalette } from 'react-icons/fa';
+import { FaSun, FaMoon, FaPalette, FaWater } from 'react-icons/fa';
 
 interface LayoutProps {
   children: ReactNode;
@@ -76,6 +76,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'OTTER' }) => {
         return <FaPalette />;
       case 'fun':
         return <FaSun />;
+      case 'ocean':
+        return <FaWater />;
       default:
         return <FaSun />;
     }
