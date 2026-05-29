@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaTrophy, FaImages, FaUser, FaCog } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
+import { FaTrophy, FaImages, FaUser, FaCog, FaBook } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { getAvatarUrl } from '../utils/assetUtils';
 
@@ -12,14 +11,16 @@ const NavContainer = styled.nav`
   left: 0;
   right: 0;
   background-color: ${({ theme }) => theme.colors.card};
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
   z-index: 100;
-  padding: ${({ theme }) => theme.spacing.sm} 0;
-  
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+
   @media (min-width: 768px) {
-    top: 0;
+    top: 56px;
     bottom: auto;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-top: none;
+    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+    padding: 0;
   }
 `;
 
@@ -29,105 +30,119 @@ const NavItems = styled.ul`
   align-items: center;
   list-style: none;
   margin: 0;
-  padding: 0;
-  max-width: 600px;
+  padding: 0 ${({ theme }) => theme.spacing.sm};
+  max-width: 500px;
   margin: 0 auto;
-`;
 
-const NavItem = styled.li<{ isActive: boolean }>`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  
-  a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: ${({ theme, isActive }) => 
-      isActive ? theme.colors.primary : theme.colors.text};
-    text-decoration: none;
-    font-size: 0.75rem;
-    font-weight: ${({ isActive }) => (isActive ? '600' : '400')};
-    padding: ${({ theme }) => theme.spacing.xs};
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
-    transition: all 0.2s ease;
-    
-    &:hover {
-      color: ${({ theme }) => theme.colors.primary};
-    }
-    
-    svg {
-      font-size: 1.5rem;
-      margin-bottom: ${({ theme }) => theme.spacing.xs};
-    }
+  @media (min-width: 768px) {
+    max-width: 600px;
+    height: 56px;
   }
 `;
 
-const UserAvatar = styled.div<{ src: string }>`
-  width: 24px;
-  height: 24px;
+const NavItem = styled.li`
+  flex: 1;
+  display: flex;
+  justify-content: center;
+`;
+
+const NavLink = styled(Link)<{ $active: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  color: ${({ $active, theme }) => $active ? theme.colors.primary : theme.colors.textMuted ?? '#888'};
+  font-size: 0.65rem;
+  font-weight: ${({ $active }) => $active ? '700' : '500'};
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+
+  svg {
+    font-size: 1.3rem;
+    transition: transform 0.2s ease;
+  }
+
+  ${({ $active, theme }) => $active && `
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 3px;
+      border-radius: 2px;
+      background: ${theme.colors.primary};
+    }
+  `}
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+    svg { transform: scale(1.1); }
+  }
+`;
+
+const AvatarIcon = styled.div<{ src: string }>`
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background-image: url(${({ src }) => src});
   background-size: cover;
   background-position: center;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const ThemeToggle = styled.button`
-  background: none;
-  border: none;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  font-size: 0.75rem;
-  
-  svg {
-    font-size: 1.5rem;
-    margin-bottom: ${({ theme }) => theme.spacing.xs};
-  }
+  border: 2px solid currentColor;
 `;
 
 const Navigation: React.FC = () => {
   const location = useLocation();
-  const { toggleTheme, themeType } = useTheme();
   const { currentUser, isAuthenticated } = useAuth();
-  
+
   const isActive = (path: string) => location.pathname === path;
-  
+
   return (
     <NavContainer>
       <NavItems>
-        <NavItem isActive={isActive('/championships')}>
-          <Link to="/championships">
+        <NavItem>
+          <NavLink to="/championships" $active={isActive('/championships')}>
             <FaTrophy />
-            <span>Championships</span>
-          </Link>
+            <span>Ranking</span>
+          </NavLink>
         </NavItem>
-        
-        <NavItem isActive={isActive('/feed')}>
-          <Link to="/feed">
+
+        <NavItem>
+          <NavLink to="/feed" $active={isActive('/feed')}>
             <FaImages />
             <span>Feed</span>
-          </Link>
+          </NavLink>
         </NavItem>
-        
-        <NavItem isActive={isActive('/profile')}>
-          <Link to="/profile">
+
+        <NavItem>
+          <NavLink to="/rules" $active={isActive('/rules')}>
+            <FaBook />
+            <span>Regeln</span>
+          </NavLink>
+        </NavItem>
+
+        <NavItem>
+          <NavLink to="/profile" $active={isActive('/profile')}>
             {isAuthenticated && currentUser?.avatar ? (
-              <UserAvatar src={getAvatarUrl(currentUser.avatar)} />
+              <AvatarIcon src={getAvatarUrl(currentUser.avatar)} />
             ) : (
               <FaUser />
             )}
-            <span>Profile</span>
-          </Link>
+            <span>Profil</span>
+          </NavLink>
         </NavItem>
-        
-        <NavItem isActive={isActive('/settings')}>
-          <Link to="/settings">
+
+        <NavItem>
+          <NavLink to="/settings" $active={isActive('/settings')}>
             <FaCog />
             <span>Settings</span>
-          </Link>
+          </NavLink>
         </NavItem>
       </NavItems>
     </NavContainer>

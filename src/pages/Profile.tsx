@@ -1,718 +1,563 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaTrophy, FaSignOutAlt, FaCamera, FaMedal, FaChartLine, FaImages, FaCog, FaUser } from 'react-icons/fa';
+import {
+  FaTrophy, FaSignOutAlt, FaMedal, FaChartLine,
+  FaImages, FaFire, FaStar, FaBolt
+} from 'react-icons/fa';
 import Layout from '../components/Layout';
-import Card from '../components/Card';
-import Button from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 import { useDatabase } from '../db/DatabaseContext';
 import { useNavigate } from 'react-router-dom';
 import { getAvatarUrl, getPhotoUrlWithFallback } from '../utils/assetUtils';
 
-interface UserStats {
-  totalPoints: number;
-  championships: number;
-  firstPlaces: number;
-  secondPlaces: number;
-  thirdPlaces: number;
-  totalCompetitions: number;
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Stats {
+  totalPoints: number; totalCompetitions: number;
+  firstPlaces: number; secondPlaces: number; thirdPlaces: number;
+  overallRank: number; totalUsers: number;
 }
 
-interface UserPhoto {
-  id: number;
-  url: string;
-  description: string;
-  date_taken: string;
-  likes_count: number;
-  comments_count: number;
-}
-
-const ProfileContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.lg};
-  max-width: 800px;
+// ─── Styled Components ────────────────────────────────────────────────────────
+const Wrap = styled.div`
+  max-width: 600px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const ProfileCover = styled.div`
-  height: 200px;
+// Hero-Banner
+const HeroBanner = styled.div`
   background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.secondary});
-  border-radius: ${({ theme }) => theme.borderRadius.large} ${({ theme }) => theme.borderRadius.large} 0 0;
-  position: relative;
-  overflow: hidden;
-`;
-
-const ProfileHeader = styled(Card)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+  border-radius: ${({ theme }) => theme.borderRadius.large};
   padding: ${({ theme }) => theme.spacing.lg};
-  padding-top: 80px;
-  margin-top: -80px;
-  border-radius: 0 0 ${({ theme }) => theme.borderRadius.large} ${({ theme }) => theme.borderRadius.large};
-  box-shadow: ${({ theme }) => theme.shadows.medium};
-`;
-
-const AvatarContainer = styled.div`
-  position: absolute;
-  top: 150px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-`;
-
-const Avatar = styled.div<{ src: string }>`
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-image: url(${({ src }) => src});
-  background-size: cover;
-  background-position: center;
-  border: 5px solid ${({ theme }) => theme.colors.card};
-  box-shadow: ${({ theme }) => theme.shadows.medium};
-`;
-
-const AvatarBadge = styled.div`
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: ${({ theme }) => theme.colors.accent};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  box-shadow: ${({ theme }) => theme.shadows.small};
-`;
-
-const UserName = styled.h2`
-  margin: 0;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 1.8rem;
-`;
-
-const Username = styled.div`
-  color: ${({ theme }) => theme.colors.text}aa;
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  font-size: 1rem;
-`;
-
-const UserBio = styled.p`
-  color: ${({ theme }) => theme.colors.text};
-  margin: ${({ theme }) => theme.spacing.md} 0;
-  max-width: 80%;
-  line-height: 1.5;
-`;
-
-const StatsContainer = styled.div`
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-  margin-top: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  flex-wrap: wrap;
-`;
-
-const StatItem = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: ${({ theme }) => theme.spacing.md};
-  min-width: 100px;
-  transition: transform 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-  }
-`;
-
-const StatValue = styled.div`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const StatLabel = styled.div`
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.colors.text}aa;
-  font-weight: 500;
-`;
-
-const StatIcon = styled.div`
-  color: ${({ theme }) => theme.colors.accent};
-  font-size: 1.2rem;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-`;
-
-const TabsContainer = styled.div`
-  display: flex;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  overflow-x: auto;
-  scrollbar-width: none;
-  
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const Tab = styled.button<{ active: boolean }>`
-  padding: ${({ theme }) => theme.spacing.md};
-  background: none;
-  border: none;
-  border-bottom: 3px solid ${({ active, theme }) => active ? theme.colors.primary : 'transparent'};
-  color: ${({ active, theme }) => active ? theme.colors.primary : theme.colors.text};
-  font-weight: ${({ active }) => active ? '600' : '400'};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
-  
-  &:hover {
-    color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
-const SectionTitle = styled.h3`
-  margin-top: 0;
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-  font-size: 1.3rem;
-  
-  svg {
-    color: ${({ theme }) => theme.colors.accent};
-  }
-`;
-
-const PhotosGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing.md};
-  
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
-`;
-
-const PhotoItem = styled.div<{ src: string }>`
-  aspect-ratio: 1;
-  background-image: url(${({ src }) => src});
-  background-size: cover;
-  background-position: center;
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  cursor: pointer;
-  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  
-  &:hover {
-    transform: scale(1.03);
-    box-shadow: ${({ theme }) => theme.shadows.medium};
-    
-    &::after {
-      opacity: 1;
-    }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
   }
-  
   &::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    bottom: -30px; left: -20px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
   }
 `;
 
-const PhotoInfo = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: ${({ theme }) => theme.spacing.sm};
-  color: white;
+const HeroAvatar = styled.div<{ src: string }>`
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background-image: url(${({ src }) => src});
+  background-size: cover;
+  background-position: center;
+  border: 4px solid rgba(255,255,255,0.9);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  position: relative;
   z-index: 1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  
-  ${PhotoItem}:hover & {
-    opacity: 1;
-  }
 `;
 
-const PhotoStats = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
+const HeroName = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: white;
+  margin: 0;
+  letter-spacing: 0.02em;
+  position: relative; z-index: 1;
+`;
+
+const HeroUsername = styled.div`
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.75);
+  font-weight: 500;
+  position: relative; z-index: 1;
+`;
+
+const HeroRank = styled.div`
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  padding: 4px 14px;
   font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.04em;
+  position: relative; z-index: 1;
 `;
 
-const PhotoStat = styled.div`
+const LogoutBtn = styled.button`
+  position: absolute;
+  top: ${({ theme }) => theme.spacing.md};
+  right: ${({ theme }) => theme.spacing.md};
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
   display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  z-index: 2;
+  &:hover { background: rgba(255,255,255,0.3); }
+`;
+
+// Stats-Grid
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const StatCard = styled.div`
+  background: ${({ theme }) => theme.colors.card};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  padding: ${({ theme }) => theme.spacing.md};
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 4px;
+  text-align: center;
 `;
 
-const AchievementContainer = styled.div`
+const StatIcon = styled.div`
+  font-size: 1.1rem;
+  color: ${({ theme }) => theme.colors.primary};
+`;
+
+const StatVal = styled.div`
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: ${({ theme }) => theme.colors.text};
+  line-height: 1;
+`;
+
+const StatLabel = styled.div`
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: ${({ theme }) => theme.colors.textMuted ?? '#888'};
+`;
+
+// Tabs
+const TabBar = styled.div`
+  display: flex;
+  background: ${({ theme }) => theme.colors.card};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  padding: 4px;
+  box-shadow: ${({ theme }) => theme.shadows.card};
+`;
+
+const TabBtn = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 8px;
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
+  color: ${({ $active, theme }) => $active ? 'white' : theme.colors.textMuted ?? '#888'};
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  svg { font-size: 0.9rem; }
+
+  &:hover:not([data-active="true"]) {
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
+const TabContent = styled.div`
+  background: ${({ theme }) => theme.colors.card};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  padding: ${({ theme }) => theme.spacing.md};
+`;
+
+// Podium-Medals Detail
+const MedalRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const MedalPill = styled.div<{ $color: string }>`
+  flex: 1;
+  background: ${({ $color }) => $color}18;
+  border: 1.5px solid ${({ $color }) => $color}44;
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+`;
+
+const MedalCount = styled.div`
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const MedalLabel = styled.div`
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.textMuted ?? '#888'};
+`;
+
+// Efficiency Bar
+const EffRow = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+`;
+
+const EffLabel = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+`;
+
+const EffTitle = styled.span`
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const EffPct = styled.span`
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.primary};
+`;
+
+const EffBar = styled.div`
+  height: 8px;
+  border-radius: 4px;
+  background: ${({ theme }) => theme.colors.border};
+  overflow: hidden;
+`;
+
+const EffFill = styled.div<{ $pct: number }>`
+  height: 100%;
+  width: ${({ $pct }) => $pct}%;
+  border-radius: 4px;
+  background: ${({ theme }) => theme.colors.primary};
+  transition: width 1s ease;
+`;
+
+// Achievements
+const AchGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: ${({ theme }) => theme.spacing.md};
-  
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-const Achievement = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: ${({ theme }) => theme.spacing.md};
-  background-color: ${({ theme }) => theme.colors.background};
+const AchCard = styled.div<{ $unlocked: boolean }>`
   border-radius: ${({ theme }) => theme.borderRadius.medium};
-  transition: transform 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: ${({ theme }) => theme.shadows.small};
-  }
+  border: 1.5px solid ${({ $unlocked, theme }) =>
+    $unlocked ? `${theme.colors.primary}44` : theme.colors.border};
+  background: ${({ $unlocked, theme }) =>
+    $unlocked ? `${theme.colors.primary}08` : theme.colors.background};
+  padding: ${({ theme }) => theme.spacing.sm};
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  opacity: ${({ $unlocked }) => $unlocked ? 1 : 0.45};
 `;
 
-const AchievementIcon = styled.div`
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: ${({ theme }) => theme.colors.primary}22;
+const AchIcon = styled.div<{ $unlocked: boolean }>`
+  width: 36px;
+  height: 36px;
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  background: ${({ $unlocked, theme }) =>
+    $unlocked ? theme.colors.primary : theme.colors.border};
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-  
-  svg {
-    color: ${({ theme }) => theme.colors.primary};
-    font-size: 1.5rem;
-  }
+  font-size: 1rem;
+  color: white;
+  flex-shrink: 0;
 `;
 
-const AchievementTitle = styled.div`
-  font-weight: 600;
-  margin-bottom: ${({ theme }) => theme.spacing.xs};
-  text-align: center;
-`;
-
-const AchievementDescription = styled.div`
+const AchText = styled.div``;
+const AchTitle = styled.div`
   font-size: 0.8rem;
-  color: ${({ theme }) => theme.colors.text}aa;
-  text-align: center;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.text};
+`;
+const AchDesc = styled.div`
+  font-size: 0.68rem;
+  color: ${({ theme }) => theme.colors.textMuted ?? '#888'};
+  margin-top: 1px;
 `;
 
-const EfficiencyMeter = styled.div`
-  width: 100%;
-  height: 8px;
-  background-color: ${({ theme }) => theme.colors.background};
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: ${({ theme }) => theme.spacing.xs};
+// Photos Grid
+const PhotoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
-const EfficiencyFill = styled.div<{ percent: number }>`
-  height: 100%;
-  width: ${({ percent }) => `${percent}%`};
-  background-color: ${({ theme, percent }) => 
-    percent > 75 ? theme.colors.success :
-    percent > 50 ? theme.colors.accent :
-    percent > 25 ? theme.colors.secondary :
-    theme.colors.error
-  };
-  border-radius: 4px;
-  transition: width 1s ease-in-out;
-`;
-
-const ButtonsContainer = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.md};
-  margin-top: ${({ theme }) => theme.spacing.lg};
-`;
-
-const LogoutButton = styled(Button)`
-  margin-top: ${({ theme }) => theme.spacing.lg};
-`;
-
-const LoadingContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const LoadingPlaceholder = styled.div`
-  width: 100%;
-  height: 20px;
-  background-color: ${({ theme }) => theme.colors.background};
+const PhotoThumb = styled.div<{ src: string }>`
+  aspect-ratio: 1;
   border-radius: ${({ theme }) => theme.borderRadius.small};
-  animation: pulse 1.5s infinite;
-  
-  @keyframes pulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
-  }
+  background-image: url(${({ src }) => src});
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  &:hover { transform: scale(1.03); }
 `;
 
+const Empty = styled.div`
+  text-align: center;
+  padding: ${({ theme }) => theme.spacing.lg};
+  color: ${({ theme }) => theme.colors.textMuted ?? '#888'};
+  font-size: 0.85rem;
+`;
+
+// ─── Komponente ───────────────────────────────────────────────────────────────
 const Profile: React.FC = () => {
-  const [userStats, setUserStats] = useState<UserStats | null>(null);
-  const [userPhotos, setUserPhotos] = useState<UserPhoto[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<string>('stats');
-  
+  const [stats, setStats]       = useState<Stats | null>(null);
+  const [photos, setPhotos]     = useState<any[]>([]);
+  const [activeTab, setTab]     = useState<'stats' | 'achievements' | 'photos'>('stats');
+
   const { currentUser, logout } = useAuth();
-  const { executeQuery } = useDatabase();
-  const navigate = useNavigate();
-  
-  // Redirect if not logged in
+  const { executeQuery }        = useDatabase();
+  const navigate                = useNavigate();
+
   useEffect(() => {
-    if (!currentUser) {
-      navigate('/login');
-    }
-  }, [currentUser, navigate]);
-  
-  // Fetch user stats
-  useEffect(() => {
-    const fetchUserStats = () => {
-      if (!currentUser) return;
-      
-      try {
-        // Get total points
-        const totalPointsResult = executeQuery(`
-          SELECT SUM(points) as total_points
-          FROM results
-          WHERE user_id = ?
-        `, [currentUser.id])[0];
-        
-        // Get number of championships won
-        const championshipsResult = executeQuery(`
-          SELECT COUNT(DISTINCT d.competition_id) as championships
-          FROM results r
-          JOIN disciplines d ON r.discipline_id = d.id
-          WHERE r.user_id = ? AND r.position = 1
-          GROUP BY d.competition_id
-          HAVING SUM(r.points) = (
-            SELECT MAX(total_points)
-            FROM (
-              SELECT user_id, SUM(points) as total_points
-              FROM results
-              JOIN disciplines ON results.discipline_id = disciplines.id
-              WHERE disciplines.competition_id = d.competition_id
-              GROUP BY user_id
-            )
-          )
-        `, [currentUser.id]);
-        
-        // Get podium finishes
-        const podiumResults = executeQuery(`
-          SELECT 
-            SUM(CASE WHEN position = 1 THEN 1 ELSE 0 END) as first_places,
-            SUM(CASE WHEN position = 2 THEN 1 ELSE 0 END) as second_places,
-            SUM(CASE WHEN position = 3 THEN 1 ELSE 0 END) as third_places,
-            COUNT(DISTINCT discipline_id) as total_competitions
-          FROM results
-          WHERE user_id = ?
-        `, [currentUser.id])[0];
-        
-        setUserStats({
-          totalPoints: totalPointsResult.total_points || 0,
-          championships: championshipsResult.length || 0,
-          firstPlaces: podiumResults.first_places || 0,
-          secondPlaces: podiumResults.second_places || 0,
-          thirdPlaces: podiumResults.third_places || 0,
-          totalCompetitions: podiumResults.total_competitions || 0
-        });
-      } catch (err) {
-        console.error('Error fetching user stats:', err);
-      }
-    };
-    
-    // Fetch user photos
-    const fetchUserPhotos = () => {
-      if (!currentUser) return;
-      
-      try {
-        const photosData = executeQuery(`
-          SELECT 
-            p.*,
-            (SELECT COUNT(*) FROM likes WHERE photo_id = p.id) as likes_count,
-            (SELECT COUNT(*) FROM comments WHERE photo_id = p.id) as comments_count
-          FROM photos p
-          WHERE p.uploaded_by = ?
-          ORDER BY p.date_taken DESC
-        `, [currentUser.id]);
-        
-        setUserPhotos(photosData);
-      } catch (err) {
-        console.error('Error fetching user photos:', err);
-      }
-    };
-    
-    if (currentUser) {
-      setIsLoading(true);
-      fetchUserStats();
-      fetchUserPhotos();
-      setIsLoading(false);
-    }
-  }, [currentUser, executeQuery]);
-  
-  // Calculate achievements based on stats
-  const getAchievements = () => {
-    if (!userStats) return [];
-    
-    // Special case for Paul (user_id 5) who won the championship
-    const isChampion = currentUser?.id === 5 || userStats.championships > 0;
-    
-    const achievements = [
-      {
-        id: 1,
-        title: 'Champion',
-        description: 'Won the Otter Challenge',
-        icon: <FaTrophy />,
-        unlocked: isChampion
-      },
-      {
-        id: 2,
-        title: 'Gold Collector',
-        description: `Earned ${userStats.firstPlaces} first place finishes`,
-        icon: <FaMedal />,
-        unlocked: userStats.firstPlaces >= 3
-      },
-      {
-        id: 3,
-        title: 'Point Hoarder',
-        description: `Accumulated ${userStats.totalPoints} total points`,
-        icon: <FaChartLine />,
-        unlocked: userStats.totalPoints >= 50
-      },
-      {
-        id: 4,
-        title: 'Photographer',
-        description: `Shared ${userPhotos.length} photos`,
-        icon: <FaCamera />,
-        unlocked: userPhotos.length >= 3
-      },
-      {
-        id: 5,
-        title: 'All-Rounder',
-        description: 'Participated in all disciplines',
-        icon: <FaUser />,
-        unlocked: userStats.totalCompetitions >= 4
-      },
-      {
-        id: 6,
-        title: 'Efficiency Expert',
-        description: `${Math.round((userStats.totalPoints / (userStats.totalCompetitions * 5)) * 100)}% point efficiency`,
-        icon: <FaChartLine />,
-        unlocked: (userStats.totalPoints / (userStats.totalCompetitions * 5)) >= 0.7
-      }
-    ];
-    
-    return achievements;
-  };
-  
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-  
-  if (!currentUser || isLoading) {
-    return (
-      <Layout title="Profile">
-        <LoadingContainer>
-          <LoadingPlaceholder style={{ width: '150px', height: '150px', borderRadius: '50%' }} />
-          <LoadingPlaceholder style={{ width: '200px' }} />
-          <LoadingPlaceholder style={{ width: '150px' }} />
-          <LoadingPlaceholder style={{ width: '100%', height: '100px', marginTop: '20px' }} />
-          <LoadingPlaceholder style={{ width: '100%', height: '200px', marginTop: '20px' }} />
-        </LoadingContainer>
-      </Layout>
-    );
+    if (!currentUser) { navigate('/login'); return; }
+
+    try {
+      // Gesamtpunkte
+      const pts = executeQuery(
+        'SELECT COALESCE(SUM(points),0) as tp FROM results WHERE user_id = ?',
+        [currentUser.id]
+      )[0]?.tp ?? 0;
+
+      // Podium
+      const pod = executeQuery(`
+        SELECT
+          SUM(CASE WHEN position = 1 THEN 1 ELSE 0 END) as fp,
+          SUM(CASE WHEN position = 2 THEN 1 ELSE 0 END) as sp,
+          SUM(CASE WHEN position = 3 THEN 1 ELSE 0 END) as tp,
+          COUNT(DISTINCT discipline_id) as tc
+        FROM results WHERE user_id = ?
+      `, [currentUser.id])[0];
+
+      // Gesamtrang (alle Teilnehmer mit Punkten)
+      const allRanks = executeQuery(`
+        SELECT user_id, SUM(points) as total
+        FROM results GROUP BY user_id ORDER BY total DESC
+      `);
+      const myRankIdx = allRanks.findIndex((r: any) => r.user_id === currentUser.id);
+
+      setStats({
+        totalPoints:      pts,
+        totalCompetitions: pod?.tc ?? 0,
+        firstPlaces:      pod?.fp ?? 0,
+        secondPlaces:     pod?.sp ?? 0,
+        thirdPlaces:      pod?.tp ?? 0,
+        overallRank:      myRankIdx >= 0 ? myRankIdx + 1 : allRanks.length + 1,
+        totalUsers:       allRanks.length,
+      });
+
+      // Fotos
+      const p = executeQuery(
+        'SELECT * FROM photos WHERE uploaded_by = ? ORDER BY date_taken DESC',
+        [currentUser.id]
+      );
+      setPhotos(p);
+    } catch (e) { console.error(e); }
+  }, [currentUser, executeQuery, navigate]);
+
+  if (!currentUser || !stats) {
+    return <Layout title="Profil"><Empty>Lade…</Empty></Layout>;
   }
-  
-  const efficiency = userStats ? Math.round((userStats.totalPoints / (userStats.totalCompetitions * 5)) * 100) : 0;
-  const achievements = getAchievements();
-  
+
+  const maxPossible = stats.totalCompetitions * 5;
+  const efficiency  = maxPossible > 0 ? Math.round((stats.totalPoints / maxPossible) * 100) : 0;
+
+  const achievements = [
+    {
+      id: 1, icon: <FaTrophy />, title: 'Sieger',
+      desc: 'Otter Challenge gewonnen',
+      unlocked: stats.overallRank === 1,
+    },
+    {
+      id: 2, icon: <FaMedal />, title: 'Gold-Sammler',
+      desc: `${stats.firstPlaces}× Platz 1`,
+      unlocked: stats.firstPlaces >= 2,
+    },
+    {
+      id: 3, icon: <FaFire />, title: 'On Fire',
+      desc: `${stats.totalPoints} Gesamtpunkte`,
+      unlocked: stats.totalPoints >= 25,
+    },
+    {
+      id: 4, icon: <FaStar />, title: 'Allrounder',
+      desc: `${stats.totalCompetitions} Challenges`,
+      unlocked: stats.totalCompetitions >= 8,
+    },
+    {
+      id: 5, icon: <FaBolt />, title: 'Effizienz',
+      desc: `${efficiency}% Punkteeffizienz`,
+      unlocked: efficiency >= 60,
+    },
+    {
+      id: 6, icon: <FaImages />, title: 'Fotograf',
+      desc: `${photos.length} Fotos geteilt`,
+      unlocked: photos.length >= 1,
+    },
+  ];
+
+  const handleLogout = () => { logout(); navigate('/login'); };
+
   return (
-    <Layout title="Profile">
-      <ProfileContainer>
-        <ProfileCover />
-        
-        <ProfileHeader>
-          <AvatarContainer>
-            <Avatar src={getAvatarUrl(currentUser.avatar)} />
-            {/* Show trophy badge for Paul or users with championships */}
-            {(currentUser.id === 5 || (userStats && userStats.championships > 0)) && (
-              <AvatarBadge>
-                <FaTrophy />
-              </AvatarBadge>
-            )}
-          </AvatarContainer>
-          
-          <UserName>{currentUser.displayName}</UserName>
-          <Username>@{currentUser.username}</Username>
-          
-          <StatsContainer>
-            <StatItem>
-              <StatIcon><FaTrophy /></StatIcon>
-              <StatValue>{userStats?.totalPoints || 0}</StatValue>
-              <StatLabel>Total Points</StatLabel>
-            </StatItem>
-            
-            <StatItem>
-              <StatIcon><FaMedal /></StatIcon>
-              <StatValue>{userStats?.firstPlaces || 0}</StatValue>
-              <StatLabel>1st Places</StatLabel>
-            </StatItem>
-            
-            <StatItem>
-              <StatIcon><FaChartLine /></StatIcon>
-              <StatValue>{userStats?.championships || 0}</StatValue>
-              <StatLabel>Championships</StatLabel>
-            </StatItem>
-          </StatsContainer>
-          
-          <ButtonsContainer>
-            <LogoutButton 
-              variant="outline" 
-              onClick={handleLogout}
-              icon={<FaSignOutAlt />}
-            >
-              Logout
-            </LogoutButton>
-          </ButtonsContainer>
-        </ProfileHeader>
-        
-        <Card>
-          <TabsContainer>
-            <Tab 
-              active={activeTab === 'stats'} 
-              onClick={() => setActiveTab('stats')}
-            >
-              <FaChartLine />
-              Stats
-            </Tab>
-            <Tab 
-              active={activeTab === 'photos'} 
-              onClick={() => setActiveTab('photos')}
-            >
-              <FaImages />
-              Photos
-            </Tab>
-            <Tab 
-              active={activeTab === 'achievements'} 
-              onClick={() => setActiveTab('achievements')}
-            >
-              <FaTrophy />
-              Achievements
-            </Tab>
-          </TabsContainer>
-          
+    <Layout title="Profil">
+      <Wrap>
+        {/* ── Hero ──────────────────────────────────────── */}
+        <HeroBanner>
+          <LogoutBtn onClick={handleLogout}>
+            <FaSignOutAlt /> Logout
+          </LogoutBtn>
+          <HeroAvatar src={getAvatarUrl(currentUser.avatar)} />
+          <HeroName>{currentUser.displayName}</HeroName>
+          <HeroUsername>@{currentUser.username}</HeroUsername>
+          <HeroRank>
+            {stats.overallRank <= stats.totalUsers
+              ? `🏆 Platz ${stats.overallRank} von ${stats.totalUsers}`
+              : 'Noch keine Teilnahme'}
+          </HeroRank>
+        </HeroBanner>
+
+        {/* ── Kurzstatistik ─────────────────────────────── */}
+        <StatsGrid>
+          <StatCard>
+            <StatIcon><FaChartLine /></StatIcon>
+            <StatVal>{stats.totalPoints}</StatVal>
+            <StatLabel>Punkte</StatLabel>
+          </StatCard>
+          <StatCard>
+            <StatIcon><FaMedal /></StatIcon>
+            <StatVal>{stats.firstPlaces}</StatVal>
+            <StatLabel>Siege</StatLabel>
+          </StatCard>
+          <StatCard>
+            <StatIcon><FaTrophy /></StatIcon>
+            <StatVal>#{stats.overallRank}</StatVal>
+            <StatLabel>Rang</StatLabel>
+          </StatCard>
+        </StatsGrid>
+
+        {/* ── Tabs ──────────────────────────────────────── */}
+        <TabBar>
+          <TabBtn $active={activeTab === 'stats'} onClick={() => setTab('stats')}>
+            <FaChartLine /> Stats
+          </TabBtn>
+          <TabBtn $active={activeTab === 'achievements'} onClick={() => setTab('achievements')}>
+            <FaTrophy /> Awards
+          </TabBtn>
+          <TabBtn $active={activeTab === 'photos'} onClick={() => setTab('photos')}>
+            <FaImages /> Fotos
+          </TabBtn>
+        </TabBar>
+
+        {/* ── Tab-Inhalte ───────────────────────────────── */}
+        <TabContent>
           {activeTab === 'stats' && (
             <>
-              <SectionTitle>
-                <FaTrophy />
-                Competition Stats
-              </SectionTitle>
-              
-              <StatsContainer>
-                <StatItem>
-                  <StatValue>{userStats?.firstPlaces || 0}</StatValue>
-                  <StatLabel>1st Places</StatLabel>
-                </StatItem>
-                
-                <StatItem>
-                  <StatValue>{userStats?.secondPlaces || 0}</StatValue>
-                  <StatLabel>2nd Places</StatLabel>
-                </StatItem>
-                
-                <StatItem>
-                  <StatValue>{userStats?.thirdPlaces || 0}</StatValue>
-                  <StatLabel>3rd Places</StatLabel>
-                </StatItem>
-                
-                <StatItem>
-                  <StatValue>{efficiency}%</StatValue>
-                  <StatLabel>Efficiency</StatLabel>
-                  <EfficiencyMeter>
-                    <EfficiencyFill percent={efficiency} />
-                  </EfficiencyMeter>
-                </StatItem>
-              </StatsContainer>
+              <MedalRow>
+                <MedalPill $color="#FC4C02">
+                  <MedalCount>{stats.firstPlaces}</MedalCount>
+                  <MedalLabel>🥇 Gold</MedalLabel>
+                </MedalPill>
+                <MedalPill $color="#A8A8A8">
+                  <MedalCount>{stats.secondPlaces}</MedalCount>
+                  <MedalLabel>🥈 Silber</MedalLabel>
+                </MedalPill>
+                <MedalPill $color="#CD7F32">
+                  <MedalCount>{stats.thirdPlaces}</MedalCount>
+                  <MedalLabel>🥉 Bronze</MedalLabel>
+                </MedalPill>
+              </MedalRow>
+
+              <EffRow>
+                <EffLabel>
+                  <EffTitle>Punkteeffizienz</EffTitle>
+                  <EffPct>{efficiency}%</EffPct>
+                </EffLabel>
+                <EffBar><EffFill $pct={efficiency} /></EffBar>
+              </EffRow>
+
+              <EffRow style={{ marginTop: 12 }}>
+                <EffLabel>
+                  <EffTitle>Challenges gespielt</EffTitle>
+                  <EffPct>{stats.totalCompetitions}</EffPct>
+                </EffLabel>
+                <EffBar>
+                  <EffFill $pct={Math.round((stats.totalCompetitions / 13) * 100)} />
+                </EffBar>
+              </EffRow>
             </>
           )}
-          
-          {activeTab === 'photos' && (
-            <>
-              <SectionTitle>
-                <FaCamera />
-                My Photos ({userPhotos.length})
-              </SectionTitle>
-              
-              {userPhotos.length > 0 ? (
-                <PhotosGrid>
-                  {userPhotos.map(photo => (
-                    <PhotoItem 
-                      key={photo.id} 
-                      src={getPhotoUrlWithFallback(photo.url, photo.id)}
-                      onClick={() => navigate(`/feed?photo=${photo.id}`)}
-                    >
-                      <PhotoInfo>
-                        <PhotoStats>
-                          <PhotoStat>❤️ {photo.likes_count}</PhotoStat>
-                          <PhotoStat>💬 {photo.comments_count}</PhotoStat>
-                        </PhotoStats>
-                      </PhotoInfo>
-                    </PhotoItem>
-                  ))}
-                </PhotosGrid>
-              ) : (
-                <div>No photos uploaded yet.</div>
-              )}
-            </>
-          )}
-          
+
           {activeTab === 'achievements' && (
-            <>
-              <SectionTitle>
-                <FaTrophy />
-                Achievements
-              </SectionTitle>
-              
-              <AchievementContainer>
-                {achievements.map(achievement => (
-                  <Achievement key={achievement.id} style={{ opacity: achievement.unlocked ? 1 : 0.5 }}>
-                    <AchievementIcon>
-                      {achievement.icon}
-                    </AchievementIcon>
-                    <AchievementTitle>{achievement.title}</AchievementTitle>
-                    <AchievementDescription>{achievement.description}</AchievementDescription>
-                  </Achievement>
-                ))}
-              </AchievementContainer>
-            </>
+            <AchGrid>
+              {achievements.map(a => (
+                <AchCard key={a.id} $unlocked={a.unlocked}>
+                  <AchIcon $unlocked={a.unlocked}>{a.icon}</AchIcon>
+                  <AchText>
+                    <AchTitle>{a.title}</AchTitle>
+                    <AchDesc>{a.desc}</AchDesc>
+                  </AchText>
+                </AchCard>
+              ))}
+            </AchGrid>
           )}
-        </Card>
-      </ProfileContainer>
+
+          {activeTab === 'photos' && (
+            photos.length > 0 ? (
+              <PhotoGrid>
+                {photos.map((p: any) => (
+                  <PhotoThumb
+                    key={p.id}
+                    src={getPhotoUrlWithFallback(p.url, p.id)}
+                    onClick={() => navigate('/feed')}
+                  />
+                ))}
+              </PhotoGrid>
+            ) : (
+              <Empty>Noch keine Fotos hochgeladen.</Empty>
+            )
+          )}
+        </TabContent>
+      </Wrap>
     </Layout>
   );
 };

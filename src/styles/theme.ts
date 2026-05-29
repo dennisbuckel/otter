@@ -3,6 +3,7 @@ export interface ThemeColors {
   secondary: string;
   background: string;
   text: string;
+  textMuted: string;
   accent: string;
   error: string;
   success: string;
@@ -20,6 +21,7 @@ export interface Theme {
     small: string;
     medium: string;
     large: string;
+    pill: string;
   };
   spacing: {
     xs: string;
@@ -32,29 +34,33 @@ export interface Theme {
     small: string;
     medium: string;
     large: string;
+    card: string;
   };
 }
 
+// ─── Sport-Theme (Standard) – Strava / Nike Inspiration ──────────────────────
 export const lightTheme: Theme = {
   colors: {
-    primary: '#3F51B5', // Indigo - more sophisticated blue
-    secondary: '#5C6BC0', // Lighter indigo
-    background: '#F8F9FA', // Slightly warmer white
-    text: '#2C3E50', // Dark blue-gray - easier on the eyes
-    accent: '#FF9800', // Orange - kept for recognition
-    error: '#E74C3C', // Softer red
-    success: '#2ECC71', // Softer green
-    card: '#FFFFFF',
-    border: '#E9ECEF', // Slightly darker for better contrast
+    primary:    '#FC4C02',  // Strava Orange – energetisch, sportlich
+    secondary:  '#FF7A3D',  // Helles Orange
+    background: '#F4F4F6',  // Sehr helles Grau
+    text:       '#111111',  // Fast Schwarz – klar, kräftig
+    textMuted:  '#888888',  // Gedämpftes Grau
+    accent:     '#1C1C1E',  // Apple Dark – für Kontrast-Elemente
+    error:      '#E53E3E',
+    success:    '#38A169',
+    card:       '#FFFFFF',
+    border:     '#E8E8E8',
   },
   fonts: {
-    main: "'Roboto', 'Segoe UI', sans-serif",
-    heading: "'Poppins', 'Segoe UI', sans-serif",
+    main:    "'Inter', 'Segoe UI', sans-serif",
+    heading: "'Inter', 'Segoe UI', sans-serif",
   },
   borderRadius: {
-    small: '4px',
-    medium: '8px',
-    large: '16px',
+    small:  '6px',
+    medium: '10px',
+    large:  '16px',
+    pill:   '999px',
   },
   spacing: {
     xs: '4px',
@@ -64,32 +70,36 @@ export const lightTheme: Theme = {
     xl: '32px',
   },
   shadows: {
-    small: '0 2px 4px rgba(0, 0, 0, 0.05)',
-    medium: '0 4px 8px rgba(0, 0, 0, 0.08)',
-    large: '0 8px 16px rgba(0, 0, 0, 0.1)',
+    small:  '0 1px 3px rgba(0,0,0,0.08)',
+    medium: '0 4px 12px rgba(0,0,0,0.10)',
+    large:  '0 8px 24px rgba(0,0,0,0.12)',
+    card:   '0 2px 8px rgba(0,0,0,0.07)',
   },
 };
 
+// ─── Dark Theme ────────────────────────────────────────────────────────────────
 export const darkTheme: Theme = {
   colors: {
-    primary: '#6366F1', // Indigo - more vibrant
-    secondary: '#818CF8', // Lighter indigo
-    background: '#1A202C', // Dark blue-gray - less harsh than pure black
-    text: '#F8F9FA', // Off-white - easier on the eyes
-    accent: '#F59E0B', // Amber - warmer orange
-    error: '#EF4444', // Vibrant red
-    success: '#10B981', // Teal green - less harsh
-    card: '#2D3748', // Dark blue-gray - softer contrast
-    border: '#4A5568', // Medium gray - better definition
+    primary:    '#FF6B35',
+    secondary:  '#FF9A6C',
+    background: '#0D0D0D',
+    text:       '#F5F5F5',
+    textMuted:  '#888888',
+    accent:     '#FF6B35',
+    error:      '#FC8181',
+    success:    '#68D391',
+    card:       '#1A1A1A',
+    border:     '#2A2A2A',
   },
   fonts: {
-    main: "'Roboto', 'Segoe UI', sans-serif",
-    heading: "'Poppins', 'Segoe UI', sans-serif",
+    main:    "'Inter', 'Segoe UI', sans-serif",
+    heading: "'Inter', 'Segoe UI', sans-serif",
   },
   borderRadius: {
-    small: '4px',
-    medium: '8px',
-    large: '16px',
+    small:  '6px',
+    medium: '10px',
+    large:  '16px',
+    pill:   '999px',
   },
   spacing: {
     xs: '4px',
@@ -99,32 +109,36 @@ export const darkTheme: Theme = {
     xl: '32px',
   },
   shadows: {
-    small: '0 2px 4px rgba(0, 0, 0, 0.3)',
-    medium: '0 4px 8px rgba(0, 0, 0, 0.4)',
-    large: '0 8px 16px rgba(0, 0, 0, 0.5)',
+    small:  '0 1px 3px rgba(0,0,0,0.5)',
+    medium: '0 4px 12px rgba(0,0,0,0.6)',
+    large:  '0 8px 24px rgba(0,0,0,0.7)',
+    card:   '0 2px 8px rgba(0,0,0,0.5)',
   },
 };
 
+// ─── Amber Theme ───────────────────────────────────────────────────────────────
 export const funTheme: Theme = {
   colors: {
-    primary: '#F59E0B', // Amber primary
-    secondary: '#FBBF24', // Light amber
-    background: '#B45309', // Deep amber background
-    text: '#FFFFFF', // White text
-    accent: '#3B82F6', // Blue accent (complementary to amber)
-    error: '#EF4444', // Red
-    success: '#34D399', // Emerald green
-    card: '#D97706', // Medium amber for cards
-    border: '#F59E0B', // Light amber for borders
+    primary:    '#F59E0B',
+    secondary:  '#FBBF24',
+    background: '#1C1400',
+    text:       '#FFFBEB',
+    textMuted:  '#D4A017',
+    accent:     '#3B82F6',
+    error:      '#EF4444',
+    success:    '#34D399',
+    card:       '#2D2000',
+    border:     '#4A3500',
   },
   fonts: {
-    main: "'Roboto', 'Segoe UI', sans-serif",
-    heading: "'Poppins', 'Segoe UI', sans-serif",
+    main:    "'Inter', 'Segoe UI', sans-serif",
+    heading: "'Inter', 'Segoe UI', sans-serif",
   },
   borderRadius: {
-    small: '8px',
-    medium: '16px',
-    large: '24px',
+    small:  '8px',
+    medium: '14px',
+    large:  '20px',
+    pill:   '999px',
   },
   spacing: {
     xs: '4px',
@@ -134,32 +148,36 @@ export const funTheme: Theme = {
     xl: '32px',
   },
   shadows: {
-    small: '0 2px 4px rgba(0, 0, 0, 0.3)',
-    medium: '0 4px 8px rgba(0, 0, 0, 0.3)',
-    large: '0 8px 16px rgba(0, 0, 0, 0.3)',
+    small:  '0 1px 3px rgba(0,0,0,0.4)',
+    medium: '0 4px 12px rgba(0,0,0,0.5)',
+    large:  '0 8px 24px rgba(0,0,0,0.6)',
+    card:   '0 2px 8px rgba(0,0,0,0.4)',
   },
 };
 
+// ─── Ocean Theme ───────────────────────────────────────────────────────────────
 export const oceanTheme: Theme = {
   colors: {
-    primary: '#0EA5E9', // Sky blue
-    secondary: '#38BDF8', // Lighter sky blue
-    background: '#0C4A6E', // Dark blue
-    text: '#F0F9FF', // Very light blue
-    accent: '#FB923C', // Orange - complementary to blue
-    error: '#EF4444', // Red
-    success: '#10B981', // Emerald green
-    card: '#075985', // Medium blue for cards
-    border: '#0284C7', // Bright blue for borders
+    primary:    '#0EA5E9',
+    secondary:  '#38BDF8',
+    background: '#082032',
+    text:       '#E0F2FE',
+    textMuted:  '#7DB9D9',
+    accent:     '#FB923C',
+    error:      '#EF4444',
+    success:    '#10B981',
+    card:       '#0C2D4A',
+    border:     '#164E6E',
   },
   fonts: {
-    main: "'Roboto', 'Segoe UI', sans-serif",
-    heading: "'Poppins', 'Segoe UI', sans-serif",
+    main:    "'Inter', 'Segoe UI', sans-serif",
+    heading: "'Inter', 'Segoe UI', sans-serif",
   },
   borderRadius: {
-    small: '8px',
+    small:  '6px',
     medium: '12px',
-    large: '20px',
+    large:  '18px',
+    pill:   '999px',
   },
   spacing: {
     xs: '4px',
@@ -169,9 +187,10 @@ export const oceanTheme: Theme = {
     xl: '32px',
   },
   shadows: {
-    small: '0 2px 4px rgba(0, 0, 0, 0.3)',
-    medium: '0 4px 8px rgba(0, 0, 0, 0.3)',
-    large: '0 8px 16px rgba(0, 0, 0, 0.3)',
+    small:  '0 1px 3px rgba(0,0,0,0.5)',
+    medium: '0 4px 12px rgba(0,0,0,0.6)',
+    large:  '0 8px 24px rgba(0,0,0,0.7)',
+    card:   '0 2px 8px rgba(0,0,0,0.5)',
   },
 };
 
@@ -179,8 +198,8 @@ export type ThemeType = 'light' | 'dark' | 'fun' | 'ocean';
 
 export const themes: Record<ThemeType, Theme> = {
   light: lightTheme,
-  dark: darkTheme,
-  fun: funTheme,
+  dark:  darkTheme,
+  fun:   funTheme,
   ocean: oceanTheme,
 };
 

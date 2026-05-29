@@ -17,31 +17,24 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  // Try to get theme from localStorage, default to 'fun' theme
+  // Standard: 'light' (Sport-Design)
   const [themeType, setThemeType] = useState<ThemeType>(() => {
-    const savedTheme = localStorage.getItem('theme') as ThemeType;
-    return savedTheme && themes[savedTheme] ? savedTheme : 'fun';
+    const saved = localStorage.getItem('theme') as ThemeType;
+    return saved && themes[saved] ? saved : 'light';
   });
 
-  // Get the actual theme object
   const theme = themes[themeType];
 
-  // Save theme to localStorage when it changes
   useEffect(() => {
     localStorage.setItem('theme', themeType);
   }, [themeType]);
 
-  // Function to set theme
-  const setTheme = (newTheme: ThemeType) => {
-    setThemeType(newTheme);
-  };
+  const setTheme = (newTheme: ThemeType) => setThemeType(newTheme);
 
-  // Function to toggle between themes
   const toggleTheme = () => {
-    const themeOrder: ThemeType[] = ['light', 'dark', 'fun', 'ocean'];
-    const currentIndex = themeOrder.indexOf(themeType);
-    const nextIndex = (currentIndex + 1) % themeOrder.length;
-    setThemeType(themeOrder[nextIndex]);
+    const order: ThemeType[] = ['light', 'dark', 'fun', 'ocean'];
+    const next = (order.indexOf(themeType) + 1) % order.length;
+    setThemeType(order[next]);
   };
 
   return (
@@ -54,11 +47,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   );
 };
 
-// Custom hook to use the theme context
 export const useTheme = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error('useTheme must be used within a ThemeProvider');
+  return ctx;
 };

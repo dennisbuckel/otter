@@ -11,9 +11,7 @@ import Feed from './pages/Feed';
 import Championships from './pages/Championships';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
-
-// Assets
-import './assets/.gitkeep'; // Ensure assets directory is created
+import Rules from './pages/Rules';
 
 const App: React.FC = () => {
   return (
@@ -31,6 +29,7 @@ const App: React.FC = () => {
                 <Route path="/championships" element={<Championships />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/rules" element={<Rules />} />
               </Route>
               
               {/* Redirect to feed by default */}

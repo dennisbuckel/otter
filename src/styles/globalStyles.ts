@@ -6,12 +6,11 @@ interface GlobalStyleProps {
 }
 
 const GlobalStyles = createGlobalStyle<GlobalStyleProps>`
-  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;500;600;700&family=Bangers&display=swap');
-
   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
 
   html, body, #root {
@@ -23,24 +22,23 @@ const GlobalStyles = createGlobalStyle<GlobalStyleProps>`
     font-family: ${({ theme }) => theme.fonts.main};
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: ${({ theme }) => theme.fonts.heading};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    font-weight: 700;
+    line-height: 1.2;
   }
 
   a {
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
     transition: color 0.2s ease;
-
-    &:hover {
-      color: ${({ theme }) => theme.colors.secondary};
-    }
+    &:hover { color: ${({ theme }) => theme.colors.secondary}; }
   }
 
   button {
@@ -48,64 +46,64 @@ const GlobalStyles = createGlobalStyle<GlobalStyleProps>`
     font-family: ${({ theme }) => theme.fonts.main};
     border: none;
     background: none;
-    
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
+    &:disabled { cursor: not-allowed; opacity: 0.6; }
   }
 
   input, textarea, select {
     font-family: ${({ theme }) => theme.fonts.main};
     font-size: 1rem;
-    padding: ${({ theme }) => theme.spacing.sm};
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${({ theme }) => theme.borderRadius.small};
-    background-color: ${({ theme }) => theme.colors.card};
-    color: ${({ theme }) => theme.colors.text};
-    
-    &:focus {
-      outline: none;
-      border-color: ${({ theme }) => theme.colors.primary};
-    }
   }
 
-  /* Mobile-first approach */
-  .container {
-    width: 100%;
-    padding: 0 ${({ theme }) => theme.spacing.md};
-    margin: 0 auto;
-    max-width: 1200px;
-  }
+  /* Scrollbar */
+  ::-webkit-scrollbar        { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  { background: ${({ theme }) => theme.colors.border}; border-radius: 3px; }
 
-  /* Animations */
+  /* ─── Animations ─────────────────────────────────────────────────────────── */
   @keyframes fadeIn {
     from { opacity: 0; }
-    to { opacity: 1; }
+    to   { opacity: 1; }
   }
 
   @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from { transform: translateY(16px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-16px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
   }
 
   @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.05); }
     100% { transform: scale(1); }
   }
 
-  .fade-in {
-    animation: fadeIn 0.5s ease forwards;
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    15%  { transform: translateX(-8px); }
+    30%  { transform: translateX(8px); }
+    45%  { transform: translateX(-6px); }
+    60%  { transform: translateX(6px); }
+    75%  { transform: translateX(-3px); }
+    90%  { transform: translateX(3px); }
   }
 
-  .slide-up {
-    animation: slideUp 0.5s ease forwards;
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
   }
 
-  .pulse {
-    animation: pulse 1.5s infinite;
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
   }
+
+  .fade-in  { animation: fadeIn  0.4s ease forwards; }
+  .slide-up { animation: slideUp 0.4s ease forwards; }
+  .shake    { animation: shake   0.5s ease; }
 `;
 
 export default GlobalStyles;
